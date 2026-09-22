@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pth
+*.pt
+logs/
+saved_model/
+checkpoints/
+data/
+.ipynb_checkpoints/
+*.DS_Store
+*.pdf
