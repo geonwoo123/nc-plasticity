@@ -2,6 +2,10 @@
 
 **ACCV 2026** | Accepted
 
+<p align="center">
+  <img src="figures/method_overview.png" width="90%" alt="Method overview">
+</p>
+
 ## Overview
 
 Prompt-based FSCIL methods freeze a ViT backbone and adapt only lightweight prompts, but discriminative base training can cause **excessive within-class feature collapse** — reducing the geometric capacity needed for novel-class prototype formation.
