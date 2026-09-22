@@ -5,7 +5,7 @@ __pycache__/
 logs/
 saved_model/
 checkpoints/
-data/
+data
 .ipynb_checkpoints/
 *.DS_Store
 *.pdf

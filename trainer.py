@@ -63,7 +63,7 @@ def _train(args):
         args["init_lr"],
         args["prompt_token_num"],
         args["prompt_pool_num"],
-        args["model_prefix"],
+        args.get("prefix", "default"),
         args["tuned_epoch"],
         args["seed"],
         args["batch_size"],
