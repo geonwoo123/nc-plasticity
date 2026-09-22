@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from torchvision import datasets, transforms
 from utils.toolkit import split_images_labels
@@ -11,63 +10,8 @@ class iData(object):
     class_order = None
 
 
-class iCIFAR10(iData):
-    use_path = False
-    train_trsf = [
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.ColorJitter(brightness=63 / 255),
-    ]
-    test_trsf = []
-    common_trsf = [
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=(0.4914, 0.4822, 0.4465), std=(0.2023, 0.1994, 0.2010)
-        ),
-    ]
-
-    class_order = np.arange(10).tolist()
-
-    def download_data(self):
-        train_dataset = datasets.cifar.CIFAR10("./data", train=True, download=True)
-        test_dataset = datasets.cifar.CIFAR10("./data", train=False, download=True)
-        self.train_data, self.train_targets = train_dataset.data, np.array(
-            train_dataset.targets
-        )
-        self.test_data, self.test_targets = test_dataset.data, np.array(
-            test_dataset.targets
-        )
-
-
-class iCIFAR100(iData):
-    use_path = False
-    train_trsf = [
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=63 / 255),
-        transforms.ToTensor()
-    ]
-    test_trsf = [transforms.ToTensor()]
-    common_trsf = [
-        transforms.Normalize(
-            mean=(0.5071, 0.4867, 0.4408), std=(0.2675, 0.2565, 0.2761)
-        ),
-    ]
-
-    class_order = np.arange(100).tolist()
-
-    def download_data(self):
-        train_dataset = datasets.cifar.CIFAR100("./data", train=True, download=True)
-        test_dataset = datasets.cifar.CIFAR100("./data", train=False, download=True)
-        self.train_data, self.train_targets = train_dataset.data, np.array(
-            train_dataset.targets
-        )
-        self.test_data, self.test_targets = test_dataset.data, np.array(
-            test_dataset.targets
-        )
-
 def build_transform_coda_prompt(is_train, args):
-    if is_train:        
+    if is_train:
         transform = [
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
@@ -99,7 +43,7 @@ def build_transform(is_train, args):
     if is_train:
         scale = (0.05, 1.0)
         ratio = (3. / 4., 4. / 3.)
-        
+
         transform = [
             transforms.RandomResizedCrop(input_size, scale=scale, ratio=ratio),
             transforms.RandomHorizontalFlip(p=0.5),
@@ -115,7 +59,7 @@ def build_transform(is_train, args):
         )
         t.append(transforms.CenterCrop(input_size))
     t.append(transforms.ToTensor())
-    
+
     # return transforms.Compose(t)
     return t
 
@@ -149,65 +93,6 @@ class iCIFAR224(iData):
         self.data2label=None
 
 
-class iImageNet1000(iData):
-    use_path = True
-    train_trsf = [
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=63 / 255),
-    ]
-    test_trsf = [
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-    ]
-    common_trsf = [
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-
-    class_order = np.arange(1000).tolist()
-    # self.txt = "./data/index_list/imagenet-r"
-    def download_data(self):
-        assert 0, "You should specify the folder of your dataset"
-        train_dir = "[DATA-PATH]/train/"
-        test_dir = "[DATA-PATH]/val/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
-
-
-class iImageNet100(iData):
-    use_path = True
-    train_trsf = [
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-    ]
-    test_trsf = [
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-    ]
-    common_trsf = [
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-
-    class_order = np.arange(1000).tolist()
-
-    def download_data(self):
-        assert 0, "You should specify the folder of your dataset"
-        train_dir = "[DATA-PATH]/train/"
-        test_dir = "[DATA-PATH]/val/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
-
-
 class iImageNetR(iData):
     def __init__(self, args):
         super().__init__()
@@ -227,7 +112,6 @@ class iImageNetR(iData):
         self.class_order = np.arange(200).tolist()
 
     def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
         train_dir = "./data/imagenet-r/train/"
         test_dir = "./data/imagenet-r/test/"
 
@@ -239,28 +123,6 @@ class iImageNetR(iData):
         self.data2label = {}
         for i in range(len(self.train_data)):
             self.data2label[self.train_data[i]] = self.train_targets[i]
-
-
-class iImageNetA(iData):
-    use_path = True
-    
-    train_trsf = build_transform(True, None)
-    test_trsf = build_transform(False, None)
-    common_trsf = [    ]
-
-    class_order = np.arange(200).tolist()
-
-    def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
-        train_dir = "./data/imagenet-a/train/"
-        test_dir = "./data/imagenet-a/test/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
-
 
 
 class CUB(iData):
@@ -275,7 +137,6 @@ class CUB(iData):
 
 
     def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
         train_dir = "./data/cub/train/"
         test_dir = "./data/cub/test/"
 
@@ -287,125 +148,3 @@ class CUB(iData):
         self.data2label = {}
         for i in range(len(self.train_data)):
             self.data2label[self.train_data[i]] = self.train_targets[i]
-
-
-class iMiniImageNet(iData):
-    def __init__(self, args):
-        self.use_path = True
-        self.train_trsf = build_transform(True, args)
-        self.test_trsf = build_transform(False, args)
-        self.common_trsf = []
-        self.txt = "./data/index_list/mini_imagenet_new"
-        self._imagenet_root = "/data/imagenet/train"
-        # Build synset order from session index files (authoritative ordering)
-        self._synset_order = self._load_synset_order()
-        self.class_order = np.arange(len(self._synset_order)).tolist()
-
-    def _load_synset_order(self):
-        # Base: extract unique class order from the original session_1 (30k lines)
-        orig_idx = "./data/index_list/mini_imagenet"
-        base_cls, seen = [], set()
-        with open(f"{orig_idx}/session_1.txt") as f:
-            for line in f:
-                cls = line.strip().split('/')[2]
-                if cls not in seen:
-                    seen.add(cls)
-                    base_cls.append(cls)
-        # Incremental: sessions 2-9 in the original files
-        incr_cls = []
-        for s in range(2, 10):
-            sess_seen = set()
-            with open(f"{orig_idx}/session_{s}.txt") as f:
-                for line in f:
-                    cls = line.strip().split('/')[2]
-                    if cls not in sess_seen:
-                        sess_seen.add(cls)
-                        incr_cls.append(cls)
-        return base_cls + incr_cls
-
-    def download_data(self):
-        imagenet_root = self._imagenet_root
-        train_data, train_targets = [], []
-        test_data, test_targets = [], []
-
-        for label, cls in enumerate(self._synset_order):
-            imgs = sorted(os.listdir(f"{imagenet_root}/{cls}"))
-            for img in imgs[:500]:
-                train_data.append(f"./data/imagenet/train/{cls}/{img}")
-                train_targets.append(label)
-            for img in imgs[500:600]:
-                test_data.append(f"./data/imagenet/train/{cls}/{img}")
-                test_targets.append(label)
-
-        self.train_data = np.array(train_data)
-        self.train_targets = np.array(train_targets)
-        self.test_data = np.array(test_data)
-        self.test_targets = np.array(test_targets)
-        self.data2label = {path: lbl for path, lbl in zip(train_data, train_targets)}
-
-
-class objectnet(iData):
-    use_path = True
-    
-    train_trsf = build_transform(True, None)
-    test_trsf = build_transform(False, None)
-    common_trsf = [    ]
-
-    class_order = np.arange(200).tolist()
-
-    def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
-        train_dir = "./data/objectnet/train/"
-        test_dir = "./data/objectnet/test/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
-
-
-class omnibenchmark(iData):
-    use_path = True
-    
-    train_trsf = build_transform(True, None)
-    test_trsf = build_transform(False, None)
-    common_trsf = [    ]
-
-    class_order = np.arange(300).tolist()
-
-    def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
-        train_dir = "./data/omnibenchmark/train/"
-        test_dir = "./data/omnibenchmark/test/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
-
-
-
-class vtab(iData):
-    use_path = True
-    
-    train_trsf = build_transform(True, None)
-    test_trsf = build_transform(False, None)
-    common_trsf = [    ]
-
-    class_order = np.arange(50).tolist()
-
-    def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
-        train_dir = "./data/vtab-cil/vtab/train/"
-        test_dir = "./data/vtab-cil/vtab/test/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
-
-        print(train_dset.class_to_idx)
-        print(test_dset.class_to_idx)
-
-        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
-        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)

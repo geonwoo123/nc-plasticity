@@ -16,7 +16,7 @@ $$\mathcal{L}_{\text{plastic}} = [\tau - V(\mathcal{B})]_+$$
 
 - Drop-in regularizer: no backbone change, no new parameters, no inference overhead
 - Applied only during base training; incremental sessions unchanged
-- Consistent improvements over SEC-Prompt and ASP across all three benchmarks
+- Consistent improvements over SEC-Prompt across all three benchmarks
 
 ## Results
 
@@ -38,13 +38,15 @@ Tested with `torch==2.1.0`, `timm==0.6.7`.
 
 ## Datasets
 
-Update the `data_path` field in each config file:
+Each dataset is loaded from a fixed relative path under `./data/`, with the base/incremental session splits defined by index-list files:
 
-| Dataset | Config folder | Default split |
-|---------|--------------|---------------|
-| CUB-200-2011 | `configs/cub/` | 100 base / 10×10 incremental |
-| CIFAR-100 | `configs/cifar100/` | 60 base / 5×8 incremental |
-| ImageNet-R | `configs/imagenet_r/` | 200 base / 10×10 incremental |
+| Dataset | Config folder | Default split | Expected layout |
+|---------|--------------|---------------|------------------|
+| CUB-200-2011 | `configs/cub/` | 100 base / 10×10 incremental | `./data/cub/{train,test}/<class>/*.jpg` + `./data/index_list/cub/session_*.txt` |
+| CIFAR-100 | `configs/cifar100/` | 60 base / 5×8 incremental | auto-downloaded to `./data/` (torchvision) + `./data/index_list/cifar100/session_*.txt` |
+| ImageNet-R | `configs/imagenet_r/` | 200 base / 10×10 incremental | `./data/imagenet-r/{train,test}/<class>/*.jpg` + `./data/index_list/imagenet-r/session_*.txt` |
+
+`train`/`test` folders follow the standard `torchvision.datasets.ImageFolder` layout (one subfolder per class). The `session_N.txt` files list the fixed few-shot samples for each incremental session and follow the standard FSCIL session-split protocol used in prior work (e.g., CEC/SAVC).
 
 ## Running Experiments
 

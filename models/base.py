@@ -56,44 +56,6 @@ class BaseLearner(object):
             self._reduce_exemplar(data_manager, per_class)
             self._construct_exemplar(data_manager, per_class)
 
-    def tsne(self, data_manager,class_index, showcenters=False, Normalize=False):
-        import os
-        if os.path.exists(self.args["base_model_path"]) and self._cur_task == 0:
-            print(
-                '================= load base model from: {} ================='.format(self.args["base_model_path"]))
-            self._network.load_state_dict(torch.load(self.args["base_model_path"]))
-            self._network.to(self._network._device)
-            print(self._network._device)
-        import umap
-        print('now draw tsne results of extracted features.')
-        tot_classes = self._total_classes
-        test_dataset = data_manager.get_dataset(class_index, source='test', mode='test')
-        valloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
-        vectors, y_true = self._extract_vectors(valloader)
-        print(vectors.shape)
-        if showcenters:
-            fc_weight = self._network.fc.weight.data.cpu().detach().numpy()[:tot_classes]
-            print(fc_weight.shape)
-            vectors = np.vstack([vectors, fc_weight])
-
-        if Normalize:
-            vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
-
-        print("tsne start")
-        embedding = umap.UMAP(n_neighbors=5,
-                              min_dist=0.3,
-                              metric='cosine').fit_transform(vectors)
-        print("tsne end")
-        if showcenters:
-            clssscenters = embedding[-tot_classes:, :]
-            centerlabels = np.arange(tot_classes)
-            embedding = embedding[:-tot_classes, :]
-        if showcenters:
-            return embedding, y_true, clssscenters, centerlabels
-        else:
-            return embedding, y_true
-
-
     def save_checkpoint(self, filename):
         self._network.cpu()
         save_dict = {

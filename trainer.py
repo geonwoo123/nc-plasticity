@@ -124,7 +124,6 @@ def _train(args):
         nc_base = top1_accy.get("nc_base", {})
         nc_train = top1_accy.get("nc_train", {})
         nc2_decomp = top1_accy.get("nc2_decomp", {})
-        nc4_dualhead = top1_accy.get("nc4_dualhead", {})
         nc1 = nc.get("NC1")
         nc2 = nc.get("NC2")
         nc3 = nc.get("NC3")
@@ -176,16 +175,6 @@ def _train(args):
             "base_corr_points": len(delta_curve_base),
             "all_corr_points": len(delta_curve_all),
             "n_new_shot": n_new_shot,
-            "nc4_fusion_alpha": float(nc4_dualhead["fusion_alpha"]) if nc4_dualhead.get("fusion_alpha") is not None else None,
-            "nc4_cls_acc": float(nc4_dualhead["cls_acc"]) if nc4_dualhead.get("cls_acc") is not None else None,
-            "nc4_proto_acc": float(nc4_dualhead["proto_acc"]) if nc4_dualhead.get("proto_acc") is not None else None,
-            "nc4_fusion_acc": float(nc4_dualhead["fusion_acc"]) if nc4_dualhead.get("fusion_acc") is not None else None,
-            "nc4_avg_cls_confidence": float(nc4_dualhead["avg_cls_confidence"]) if nc4_dualhead.get("avg_cls_confidence") is not None else None,
-            "nc4_avg_proto_confidence": float(nc4_dualhead["avg_proto_confidence"]) if nc4_dualhead.get("avg_proto_confidence") is not None else None,
-            "nc4_avg_fusion_confidence": float(nc4_dualhead["avg_fusion_confidence"]) if nc4_dualhead.get("avg_fusion_confidence") is not None else None,
-            "nc4_avg_top1_top2_margin_cls": float(nc4_dualhead["avg_top1_top2_margin_cls"]) if nc4_dualhead.get("avg_top1_top2_margin_cls") is not None else None,
-            "nc4_avg_top1_top2_margin_proto": float(nc4_dualhead["avg_top1_top2_margin_proto"]) if nc4_dualhead.get("avg_top1_top2_margin_proto") is not None else None,
-            "nc4_avg_top1_top2_margin_fusion": float(nc4_dualhead["avg_top1_top2_margin_fusion"]) if nc4_dualhead.get("avg_top1_top2_margin_fusion") is not None else None,
         }
         session_metrics.append(row)
         _write_session_metrics(metrics_json_path, metrics_csv_path, session_metrics)
@@ -294,16 +283,6 @@ def _write_session_metrics(json_path, csv_path, session_metrics, relation_summar
         "base_corr_points",
         "all_corr_points",
         "n_new_shot",
-        "nc4_fusion_alpha",
-        "nc4_cls_acc",
-        "nc4_proto_acc",
-        "nc4_fusion_acc",
-        "nc4_avg_cls_confidence",
-        "nc4_avg_proto_confidence",
-        "nc4_avg_fusion_confidence",
-        "nc4_avg_top1_top2_margin_cls",
-        "nc4_avg_top1_top2_margin_proto",
-        "nc4_avg_top1_top2_margin_fusion",
     ]
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
