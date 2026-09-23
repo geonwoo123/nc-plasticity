@@ -63,12 +63,6 @@ python run_multiseed.py --config configs/cifar100/nc_plasticity.json
 python run_multiseed.py --config configs/imagenet_r/nc_plasticity.json
 ```
 
-**Sensitivity sweep (Table 5):**
-```bash
-python run_multiseed.py --config configs/sensitivity/tau_0_5.json   # τ sweep
-python run_multiseed.py --config configs/sensitivity/lambda_1_0.json # λ sweep
-```
-
 ## Hyperparameters
 
 | | Base Session | Incremental | NC-Plasticity |
@@ -88,7 +82,6 @@ configs/
   cub/             # baseline.json, nc_plasticity.json
   cifar100/        # baseline.json, nc_plasticity.json
   imagenet_r/      # baseline.json, nc_plasticity.json
-  sensitivity/     # tau / lambda sweep configs
 models/            # NC-Plasticity loss, SEC-Prompt, model factory
 utils/             # data manager, neural_collapse.py, metrics
 main.py            # single-seed entry point
