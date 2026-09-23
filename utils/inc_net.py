@@ -1,7 +1,7 @@
 import copy
 from torch import nn
 
-_VPT_MODELS = {"sec", "nc_plasticity", "soft_etf", "hard_etf"}
+_VPT_MODELS = {"sec", "nc_plasticity"}
 
 
 def get_backbone(args, pretrained=False):

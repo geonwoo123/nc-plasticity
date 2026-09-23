@@ -63,12 +63,6 @@ python run_multiseed.py --config configs/cifar100/nc_plasticity.json
 python run_multiseed.py --config configs/imagenet_r/nc_plasticity.json
 ```
 
-**Ablation (soft / hard ETF correction):**
-```bash
-python run_multiseed.py --config configs/cub/ablation_soft_etf.json
-python run_multiseed.py --config configs/cub/ablation_hard_etf.json
-```
-
 **Sensitivity sweep (Table 5):**
 ```bash
 python run_multiseed.py --config configs/sensitivity/tau_0_5.json   # τ sweep
@@ -91,7 +85,7 @@ python run_multiseed.py --config configs/sensitivity/lambda_1_0.json # λ sweep
 ```
 backbone/          # ViT-B/16 with Deep VPT
 configs/
-  cub/             # baseline.json, nc_plasticity.json, ablation_*.json
+  cub/             # baseline.json, nc_plasticity.json
   cifar100/        # baseline.json, nc_plasticity.json
   imagenet_r/      # baseline.json, nc_plasticity.json
   sensitivity/     # tau / lambda sweep configs
