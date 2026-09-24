@@ -41,6 +41,7 @@ def main():
     with open(cli.config) as f:
         args = json.load(f)
 
+    os.makedirs("logs", exist_ok=True)
     logfilename = f"logs/repeat_{args.get('prefix', 'run')}"
     logging.basicConfig(
         level=logging.INFO,

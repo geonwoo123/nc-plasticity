@@ -1,7 +1,11 @@
-torch>=1.12
-torchvision>=0.13
+# Install PyTorch separately first, matched to your CUDA version (see https://pytorch.org).
+# Tested with: python 3.10, torch 2.1.0, torchvision 0.16.0 (CUDA 12.1)
+torch>=2.1.0
+torchvision>=0.16.0
+
+# The VPT backbone subclasses timm's VisionTransformer; results depend on this version.
 timm==0.6.7
-numpy
-scipy
-scikit-learn
-pillow
+
+numpy>=1.23.5
+scipy>=1.10.0
+pillow>=9.4.0

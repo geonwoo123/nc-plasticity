@@ -1,94 +1,109 @@
-# Neural Collapse-Guided Plasticity Regularization for Prompt-based Few-Shot Class-Incremental Learning
-
-**ACCV 2026** | Accepted
+<h1 align="center">Neural Collapse-Guided Plasticity Regularization for Prompt-based Few-Shot Class-Incremental Learning</h1>
 
 <p align="center">
-  <img src="figures/method_overview.png" width="90%" alt="Method overview">
+  <b>Geonwoo Im</b><sup>1</sup>, <b><a href="https://scholar.google.com/citations?user=V6HVW-QAAAAJ&hl=ko&oi=ao">Sang Min Yoon</a></b><sup>1</sup>
 </p>
 
-## Overview
+<p align="center">
+  <sup>1</sup>HCI Lab, College of Computer Science, Kookmin University, Seoul, Korea
+</p>
 
-Prompt-based FSCIL methods freeze a ViT backbone and adapt only lightweight prompts, but discriminative base training can cause **excessive within-class feature collapse** — reducing the geometric capacity needed for novel-class prototype formation.
+<p align="center">
+  <img src="assets/main_figure.png" width="90%">
+</p>
 
-We propose **NC-Plasticity**, a lightweight base-session loss that imposes a soft lower bound on within-class feature variability:
+---
 
-$$\mathcal{L}_{\text{plastic}} = [\tau - V(\mathcal{B})]_+$$
+## Installation
 
-- Drop-in regularizer: no backbone change, no new parameters, no inference overhead
-- Applied only during base training; incremental sessions unchanged
-- Consistent improvements over SEC-Prompt across all three benchmarks
+```bash
+# 1. Create the environment and install PyTorch (CUDA 12.1)
+conda create -n ncp python=3.10 -y
+conda activate ncp
+pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
 
-## Results
-
-| Dataset | Baseline AA | +NC-Plasticity AA | Δ |
-|---------|-------------|-------------------|---|
-| CUB-200 | 85.36±0.12 | **85.71±0.20** | +0.35 |
-| CIFAR-100 | 89.11±0.21 | **89.85±0.11** | +0.74 |
-| ImageNet-R | 77.22±0.16 | **77.72±0.18** | +0.50 |
-
-*(paired 15-seed protocol, SEC-Prompt backbone, mean ± std, p < 10⁻⁵)*
-
-## Requirements
-
-```
+# 2. Install the remaining dependencies
 pip install -r requirements.txt
 ```
 
-Tested with `torch==2.1.0`, `timm==0.6.7`.
+---
 
-## Datasets
+## Data
 
-Each dataset is loaded from a fixed relative path under `./data/`, with the base/incremental session splits defined by index-list files:
+Datasets and few-shot session splits follow [SEC-Prompt](https://github.com/yeyeyeye33/SEC-Prompt). Lay them out under `./data/`:
 
-| Dataset | Config folder | Default split | Expected layout |
-|---------|--------------|---------------|------------------|
-| CUB-200-2011 | `configs/cub/` | 100 base / 10×10 incremental | `./data/cub/{train,test}/<class>/*.jpg` + `./data/index_list/cub/session_*.txt` |
-| CIFAR-100 | `configs/cifar100/` | 60 base / 5×8 incremental | auto-downloaded to `./data/` (torchvision) + `./data/index_list/cifar100/session_*.txt` |
-| ImageNet-R | `configs/imagenet_r/` | 200 base / 10×10 incremental | `./data/imagenet-r/{train,test}/<class>/*.jpg` + `./data/index_list/imagenet-r/session_*.txt` |
+```
+data/
+├── cub/                         # CUB-200 (ImageFolder layout)
+│   ├── train/<class>/*.jpg
+│   └── test/<class>/*.jpg
+├── imagenet-r/                  # ImageNet-R (ImageFolder layout)
+│   ├── train/<class>/*.jpg
+│   └── test/<class>/*.jpg
+└── index_list/                  # copy from SEC-Prompt: data/index_list/
+    ├── cub/session_*.txt
+    ├── imagenet-r/session_*.txt
+    └── cifar100/session_*.txt
+```
 
-`train`/`test` folders follow the standard `torchvision.datasets.ImageFolder` layout (one subfolder per class). The `session_N.txt` files list the fixed few-shot samples for each incremental session and follow the standard FSCIL session-split protocol used in prior work (e.g., CEC/SAVC).
+- **CIFAR-100** is downloaded automatically by torchvision into `./data/`.
+- **CUB-200 / ImageNet-R**: download the prepared archives linked in the SEC-Prompt README and rename the extracted folders to `cub/` and `imagenet-r/` if needed.
+- `index_list/` fixes the few-shot samples of every incremental session; copy it from the SEC-Prompt repository.
 
-## Running Experiments
+| Dataset | Config folder | Split |
+|---------|---------------|-------|
+| CUB-200 | `configs/cub/` | 100 base / 10 sessions × 10 classes |
+| CIFAR-100 | `configs/cifar100/` | 60 base / 8 sessions × 5 classes |
+| ImageNet-R | `configs/imagenet_r/` | 100 base / 10 sessions × 10 classes |
 
-**Single-seed run (main.py):**
+---
+
+## Training and Evaluation
+
+NC-Plasticity adds a variability floor to the SEC-Prompt base-session objective,
+
+$$\mathcal{L}_{\text{plastic}} = [\tau - V(\mathcal{B})]_+ ,$$
+
+while the ViT backbone stays frozen and only the prompts are trained. Incremental sessions are unchanged. The defaults (`tau_var: 0.5`, `lambda_plastic: 1.0`) are set in the configs.
+
+Training and evaluation run together: every session is evaluated right after it is learned.
+
 ```bash
+# NC-Plasticity
 python main.py --config configs/cub/nc_plasticity.json
+
+# SEC-Prompt baseline
 python main.py --config configs/cub/baseline.json
 ```
 
-**Paired 15-seed protocol (Table 4 in paper):**
+`main.py` runs every seed listed in the config's `seed` field (default: the 15 paired seeds). To run a single seed, set e.g. `"seed": [0]` in the config.
+
+### Paired 15-seed protocol
+
 ```bash
 python run_multiseed.py --config configs/cub/nc_plasticity.json
-python run_multiseed.py --config configs/cifar100/nc_plasticity.json
-python run_multiseed.py --config configs/imagenet_r/nc_plasticity.json
+python run_multiseed.py --config configs/cub/baseline.json
 ```
 
-## Hyperparameters
+`run_multiseed.py` runs the same seeds and additionally prints the final `mean ± std` of the average accuracy (the `=== FINAL | ... ===` line at the end of `logs/repeat_<prefix>.log`). Use the `cifar100/` and `imagenet_r/` configs for the other datasets.
 
-| | Base Session | Incremental | NC-Plasticity |
-|--|-------------|-------------|---------------|
-| Batch size | 32 | 16 | — |
-| LR | 0.01 | 0.001 | — |
-| Epochs | 30 | 10 | — |
-| Optimizer | SGD (wd=5e-3) | SGD | — |
-| τ | — | — | **0.5** |
-| λ | — | — | **1.0** |
+---
 
-## Code Structure
+## Citation
 
-```
-backbone/          # ViT-B/16 with Deep VPT
-configs/
-  cub/             # baseline.json, nc_plasticity.json
-  cifar100/        # baseline.json, nc_plasticity.json
-  imagenet_r/      # baseline.json, nc_plasticity.json
-models/            # NC-Plasticity loss, SEC-Prompt, model factory
-utils/             # data manager, neural_collapse.py, metrics
-main.py            # single-seed entry point
-trainer.py         # training loop
-run_multiseed.py   # paired multi-seed evaluation (15-seed protocol)
+If you find this work useful, please consider citing our paper:
+
+```bibtex
+@inproceedings{im2026ncplasticity,
+  title     = {Neural Collapse-Guided Plasticity Regularization for Prompt-based Few-Shot Class-Incremental Learning},
+  author    = {Im, Geonwoo and Yoon, Sang Min},
+  booktitle = {Asian Conference on Computer Vision (ACCV)},
+  year      = {2026}
+}
 ```
 
-## License
+---
 
-This project is released under the [MIT License](LICENSE).
+## Acknowledgements
+
+This codebase is built on [SEC-Prompt](https://github.com/yeyeyeye33/SEC-Prompt), which in turn builds on [FSCIL-ASP](https://github.com/DawnLIU35/FSCIL-ASP) and [CODA-Prompt](https://github.com/GT-RIPL/CODA-Prompt). The Gram-Schmidt prompt initialization is adapted from [pytorch-gram-schmidt](https://github.com/legendongary/pytorch-gram-schmidt).
