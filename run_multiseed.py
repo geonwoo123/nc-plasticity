@@ -8,14 +8,13 @@ Usage:
   python run_multiseed.py --config configs/cub/nc_plasticity.json
 """
 
-import os
 import sys
 import argparse
 import json
 import copy
 
 import torch
-from trainer import train, _set_device, print_args, Harmonic_Accuracy
+from trainer import _set_device, print_args, Harmonic_Accuracy
 from utils.data_manager import DataManager
 from utils import factory
 import logging

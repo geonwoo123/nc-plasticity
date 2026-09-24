@@ -1,12 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.nn.init as init
-import torchvision.models as models
-from torch.autograd import Variable
-import numpy as np
 import copy
-from SupConLoss import SupConLoss, CenterLoss, prompt_con_loss, prompt_centloss
+from SupConLoss import SupConLoss, prompt_centloss
 
 
 def tensor_prompt(a, b, c=None, ortho=False, grad=True):

@@ -1,8 +1,6 @@
 import copy
 from torch import nn
 
-_VPT_MODELS = {"sec", "nc_plasticity"}
-
 
 def get_backbone(args, pretrained=False):
     name = args["backbone_type"].lower()

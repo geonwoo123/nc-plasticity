@@ -69,7 +69,6 @@ class VPT_ViT(VisionTransformer):
         for param in self.parameters():
             param.requires_grad = False
 
-        # self.TIP.requires_grad = True
         try:
             for name,param in self.TSP.named_parameters():
                 param.requires_grad = True
@@ -82,7 +81,6 @@ class VPT_ViT(VisionTransformer):
         for param in self.parameters():
             param.requires_grad = False
 
-        # self.TIP.requires_grad = True
         try:
             for name,param in self.TSP.named_parameters():
                 param.requires_grad = True

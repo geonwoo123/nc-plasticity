@@ -69,7 +69,6 @@ class DataManager(object):
                     targets.append(self.data2label[path])
             else:
                 class_idx=open(txt).read().splitlines()
-                # print(class_idx)
                 for idx in class_idx:
                     data.append(self._train_data[int(idx)])
                     targets.append(self._train_targets[int(idx)])
