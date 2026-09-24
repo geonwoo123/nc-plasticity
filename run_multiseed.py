@@ -8,6 +8,7 @@ Usage:
   python run_multiseed.py --config configs/cub/nc_plasticity.json
 """
 
+import os
 import sys
 import argparse
 import json
@@ -54,6 +55,7 @@ def main():
 
     seed_list = copy.deepcopy(args["seed"]) if isinstance(args["seed"], list) else [args["seed"]]
     device = copy.deepcopy(args["device"])
+    seed_avg_accs = []
 
     for run_idx, seed in enumerate(seed_list):
         logging.info(f"=== Run {run_idx + 1}/{len(seed_list)} | Seed {seed} ===")
@@ -65,6 +67,18 @@ def main():
 
         if "nb_tasks" not in args:
             args["nb_tasks"] = 11
+
+        saved_path = "saved_model/{}/{}/{}_{}/{}_{}".format(
+            "sec_tr", args["dataset"], args["tuned_epoch"], args["init_lr"],
+            args["prompt_token_num"], args["prompt_pool_num"],
+        )
+        if not os.path.exists(saved_path):
+            os.makedirs(saved_path)
+        args["base_model_path"] = "saved_model/{}/{}/{}_{}/{}_{}/{}_{}_{}_{}.pth".format(
+            "sec_tr", args["dataset"], args["tuned_epoch"], args["init_lr"],
+            args["prompt_token_num"], args["prompt_pool_num"], args.get("prefix", "default"),
+            args["tuned_epoch"], args["seed"], args["batch_size"],
+        )
 
         print_args(args)
 
@@ -99,6 +113,14 @@ def main():
 
         avg_acc = sum(top1_curve) / len(top1_curve)
         logging.info(f"=== Run {run_idx+1} done | Seed {seed} | Avg ACC={avg_acc:.2f} | Curve={[round(x,2) for x in top1_curve]} ===")
+        seed_avg_accs.append(avg_acc)
+
+    mean_acc = float(np.mean(seed_avg_accs))
+    std_acc = float(np.std(seed_avg_accs, ddof=1)) if len(seed_avg_accs) > 1 else 0.0
+    logging.info(
+        f"=== FINAL | {len(seed_avg_accs)}-seed AA = {mean_acc:.2f} ± {std_acc:.2f} "
+        f"(sample std, ddof=1) | Per-seed={[round(x, 2) for x in seed_avg_accs]} ==="
+    )
 
 
 if __name__ == "__main__":
