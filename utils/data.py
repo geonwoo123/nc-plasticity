@@ -60,7 +60,6 @@ def build_transform(is_train, args):
         t.append(transforms.CenterCrop(input_size))
     t.append(transforms.ToTensor())
 
-    # return transforms.Compose(t)
     return t
 
 class iCIFAR224(iData):
@@ -75,9 +74,7 @@ class iCIFAR224(iData):
         else:
             self.train_trsf = build_transform(True, args)
             self.test_trsf = build_transform(False, args)
-        self.common_trsf = [
-            # transforms.ToTensor(),
-        ]
+        self.common_trsf = []
 
         self.class_order = np.arange(100).tolist()
 
@@ -105,9 +102,7 @@ class iImageNetR(iData):
         else:
             self.train_trsf = build_transform(True, args)
             self.test_trsf = build_transform(False, args)
-        self.common_trsf = [
-            # transforms.ToTensor(),
-        ]
+        self.common_trsf = []
 
         self.class_order = np.arange(200).tolist()
 

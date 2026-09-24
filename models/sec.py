@@ -1,11 +1,8 @@
-# watermark version
-
 import logging
 import os
 import numpy as np
 import torch
 from torch import nn
-from torch.serialization import load
 from torch import optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -91,7 +88,6 @@ class Learner(BaseLearner):
     def incremental_train(self, data_manager):
         self._cur_task += 1
         self._total_classes = self._known_classes + data_manager.get_task_size(self._cur_task)
-        # print(self._total_classes)
         self._network.update_fc(self._total_classes)
         self._network.backbone.TSP.process_task_count(self._total_classes)
         self._network.backbone.RSP.process_task_count()
@@ -199,10 +195,7 @@ class Learner(BaseLearner):
         if os.path.exists(self.args["base_model_path"]) and self._cur_task == 0:
             logging.info(
                 '================= load base model from: {} ================='.format(self.args["base_model_path"]))
-            print(self._cur_task)
             self._network.load_state_dict(torch.load(self.args["base_model_path"], map_location='cpu'))
-            # self.replace_midfeature(train_loader_for_protonet, self._network, None)
-            # self.replace_fc(train_loader_for_protonet, self._network, None)
 
         else:
             if self._cur_task > 0:
@@ -227,7 +220,6 @@ class Learner(BaseLearner):
                                                                  eta_min=self.min_lr)
                 self._init_train(train_loader, test_loader, train_loader_for_protonet, optimizer, scheduler)
             self._finalize_classifier(train_loader_for_protonet)
-            # self.replace_midfeature(train_loader_for_protonet, self._network, None)
             if self._cur_task == 0:
                 torch.save(self._network.state_dict(), self.args["base_model_path"])
 
@@ -364,7 +356,6 @@ class Learner(BaseLearner):
             self._network.train()
             for i, (_, inputs, targets) in enumerate(train_loader):
                 inputs, targets = inputs.to(self._device), targets.to(self._device)
-                # print(inputs.shape)
                 if self._cur_task == 0:
 
                     out = self._network(inputs, targets=targets)
@@ -379,7 +370,6 @@ class Learner(BaseLearner):
                     loss_pc = out['loss_match']
                     targets = targets.repeat(int(logits.shape[0] / targets.shape[0]))
                     loss = F.cross_entropy(logits, targets) + loss_pc * self.args["beta"]
-                    # print(loss_pc)
                 optimizer.zero_grad()
                 loss.backward()
 

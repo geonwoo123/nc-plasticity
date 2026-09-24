@@ -149,9 +149,7 @@ class BaseLearner(object):
 
         with torch.no_grad():
             for _, _inputs, _targets in loader:
-                # print(_inputs.shape)
                 _targets = _targets.numpy()
-                # _inputs = _inputs.cpu()
                 if isinstance(self._network, nn.DataParallel):
                     _vectors = tensor2numpy(
                         self._network.module.extract_vector(_inputs.to(self._device))
@@ -241,8 +239,6 @@ class BaseLearner(object):
                     data, i, axis=0
                 )  # Remove it to avoid duplicative selection
 
-            # uniques = np.unique(selected_exemplars, axis=0)
-            # print('Unique elements: {}'.format(len(uniques)))
             selected_exemplars = np.array(selected_exemplars)
             exemplar_targets = np.full(m, class_idx)
             self._data_memory = (

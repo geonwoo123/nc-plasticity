@@ -76,16 +76,13 @@ class CenterLoss(nn.Module):
 import torch
 import torch.nn.functional as F
 
-import torch
-import torch.nn.functional as F
-
 
 def prompt_con_loss(prompts, labels, similarity_metric='cosine'):
 
     batch_size, num_prompts, prompt_dim = prompts.shape
 
     # [batch_size, prompt_dim_total]
-    prompts_flat = prompts.view(batch_size, -1)  # 变为 [batch_size, num_prompts * prompt_dim]
+    prompts_flat = prompts.view(batch_size, -1)
 
     if similarity_metric == 'cosine':
 
@@ -96,12 +93,12 @@ def prompt_con_loss(prompts, labels, similarity_metric='cosine'):
         # ||x - y||^2 = ||x||^2 + ||y||^2 - 2 * x · y
         squared_norm = torch.sum(prompts_flat ** 2, dim=-1, keepdim=True)  # [batch_size, 1]
         similarity_matrix = squared_norm + squared_norm.T - 2 * torch.matmul(prompts_flat, prompts_flat.T)
-        similarity_matrix = torch.sqrt(F.relu(similarity_matrix))  # 避免负值
+        similarity_matrix = torch.sqrt(F.relu(similarity_matrix))
 
 
     labels_expand = labels.unsqueeze(1)  # [batch_size, 1]
-    same_class_mask = (labels_expand == labels_expand.T).float()  # 同类掩码 [batch_size, batch_size]
-    diff_class_mask = 1 - same_class_mask  # 不同类掩码 [batch_size, batch_size]
+    same_class_mask = (labels_expand == labels_expand.T).float()  # [batch_size, batch_size]
+    diff_class_mask = 1 - same_class_mask
 
 
     if similarity_metric == 'cosine':
@@ -111,7 +108,7 @@ def prompt_con_loss(prompts, labels, similarity_metric='cosine'):
 
         similarity_loss = similarity_matrix * same_class_mask
 
-    similarity_loss = similarity_loss.sum() / same_class_mask.sum()  # 归一化损失
+    similarity_loss = similarity_loss.sum() / same_class_mask.sum()
 
 
     if similarity_metric == 'cosine':
@@ -121,7 +118,7 @@ def prompt_con_loss(prompts, labels, similarity_metric='cosine'):
 
         dissimilarity_loss = (-similarity_matrix) * diff_class_mask
 
-    dissimilarity_loss = dissimilarity_loss.sum() / diff_class_mask.sum()  # 归一化损失
+    dissimilarity_loss = dissimilarity_loss.sum() / diff_class_mask.sum()
 
 
     total_loss = similarity_loss + dissimilarity_loss
@@ -129,16 +126,12 @@ def prompt_con_loss(prompts, labels, similarity_metric='cosine'):
     return total_loss
 
 
-import torch
-import torch.nn.functional as F
-
-
 def prompt_centloss(prompts, labels, similarity_metric='cosine'):
 
     batch_size, num_prompts, prompt_dim = prompts.shape
 
     # [batch_size, prompt_dim_total]
-    prompts_flat = prompts.view(batch_size, -1)  # [batch_size, num_prompts * prompt_dim]
+    prompts_flat = prompts.view(batch_size, -1)
 
     if similarity_metric == 'cosine':
 
@@ -148,11 +141,11 @@ def prompt_centloss(prompts, labels, similarity_metric='cosine'):
 
         squared_norm = torch.sum(prompts_flat ** 2, dim=-1, keepdim=True)  # [batch_size, 1]
         similarity_matrix = squared_norm + squared_norm.T - 2 * torch.matmul(prompts_flat, prompts_flat.T)
-        similarity_matrix = torch.sqrt(F.relu(similarity_matrix))  # 避免负值
+        similarity_matrix = torch.sqrt(F.relu(similarity_matrix))
 
 
     labels_expand = labels.unsqueeze(1)  # [batch_size, 1]
-    same_class_mask = (labels_expand == labels_expand.T).float()  # 同类掩码 [batch_size, batch_size]
+    same_class_mask = (labels_expand == labels_expand.T).float()  # [batch_size, batch_size]
 
 
     if similarity_metric == 'cosine':

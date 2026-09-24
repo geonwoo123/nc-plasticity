@@ -85,14 +85,6 @@ class DPrompt(nn.Module):
             self.prompt_num = round(self.ini_class * self.args["prompt_pool_num"])
         else:
             self.prompt_num = self.prompt_num + round(self.incre_class * self.args["prompt_pool_num"])
-        print(self.last_class_num)
-        print(self.class_num)
-
-        # print('#################################################')
-        # print(self.task_count)
-        # print(self.last_class_num)
-        # print(self.class_num)
-        # print('#################################################')
         # in the spirit of continual learning, we will reinit the new components
         # for the new task with Gram Schmidt
         #
@@ -101,16 +93,6 @@ class DPrompt(nn.Module):
         #
         # code for this function is modified from:
         # https://github.com/legendongary/pytorch-gram-schmidt/blob/master/gram_schmidt.py
-        # for e in self.e_layers:
-        #     K = getattr(self,f'e_k_{e}')
-        #     A = getattr(self,f'e_a_{e}')
-        #     P = getattr(self,f'e_p_{e}')
-        #     k = self.gram_schmidt(K)
-        #     a = self.gram_schmidt(A)
-        #     p = self.gram_schmidt(P)
-        #     setattr(self, f'e_p_{e}',p)
-        #     setattr(self, f'e_k_{e}',k)
-        #     setattr(self, f'e_a_{e}',a)
 
     # code for this function is modified from:
     # https://github.com/legendongary/pytorch-gram-schmidt/blob/master/gram_schmidt.py
@@ -140,7 +122,6 @@ class DPrompt(nn.Module):
         # get starting point
 
         for k in range(0, self.e_pool_size):
-            # print(k)
             redo = True
             while redo:
                 redo = False
@@ -152,7 +133,6 @@ class DPrompt(nn.Module):
                         proj = projection(uj, vk)
                         if proj is None:
                             redo = True
-                            # print('restarting!!!')
                         else:
                             uk = uk + proj
                 if not redo: uu[:, k] = vk - uk
@@ -180,9 +160,6 @@ class DPrompt(nn.Module):
             A = getattr(self, f'e_a_{l}')
             p = getattr(self, f'e_p_{l}')
 
-            # print(A.shape)
-            # print(self.last_class_num)
-            # print(self.class_num)
             if self.task_count > 0:
                 K = torch.cat((K[:self.last_prompt_num].detach().clone(), K[self.last_prompt_num:self.prompt_num]),
                               dim=0)
@@ -203,20 +180,7 @@ class DPrompt(nn.Module):
             q = nn.functional.normalize(a_querry, dim=2)
             aq_k = torch.einsum('bkd,kd->bk', q, n_K)
             aq_k = torch.nn.functional.softmax(aq_k)
-            # if self.task_count > 0:
-            #     k_idx = range(self.last_class_num, self.class_num)
-            #     loss = (1.0 - aq_k[:, k_idx]).sum() / x_querry.shape[0]
-            # print(aq_k.min())
             # (b x 1 x k x 1) * [1 x plen x k x d] = (b x plen x d) -> prompt = plen x k x d
-
-            # if targets is not None:
-            #     if targets.shape[0] != aq_k.shape[0]:
-            #         targets = targets.repeat(int(aq_k.shape[0] / targets.shape[0]))
-            #     # print(targets.shape)
-            #     for i in range(targets.shape[0]):
-            #         k_idx = targets[i]
-            #         loss += 1.0 - abs(aq_k[i, k_idx])
-            #     loss = loss / targets.shape[0]
             P_ = torch.einsum('bk,kld->bld', aq_k, p)
             if targets is not None:
                 if targets.shape[0] != x_querry.shape[0]:
@@ -224,18 +188,7 @@ class DPrompt(nn.Module):
                 loss = prompt_centloss(P_, targets)
 
         else:
-            # loss=None
             P_ = None
-
-        # combine prompts for prefix tuning
-        # if e_valid:
-        #     p_return = [Ek, Ev]
-        # else:
-        #     p_return = None
-
-        # return
-        # print(aq_k)
-        # print(aq_k[0:self.last_class_num].shape)
 
         return P_, loss
 
@@ -250,17 +203,14 @@ class DPrompt(nn.Module):
             A = torch.cat((A[:self.last_prompt_num].detach().clone(), A[self.last_prompt_num:self.prompt_num]), dim=0)
             p = torch.cat((p[:self.last_prompt_num].detach().clone(), p[self.last_prompt_num:self.prompt_num]), dim=0)
             x_query = x_querry[i - self.e_layers[0], :, :].squeeze()
-            # print(x_query.shape)
             a_query = torch.einsum('bd,kd->bkd', x_query, A)
             # # (b x k x d) - [1 x k x d] = (b x k) -> key = k x d
             n_K = nn.functional.normalize(K, dim=1)
             q = nn.functional.normalize(a_query, dim=2)
             aq_k = torch.einsum('bkd,kd->bk', q, n_K)
-            # print(aq_k)
             k_idx = range(self.last_prompt_num, self.prompt_num)
             loss += abs(aq_k[:, k_idx]).sum() / x_query.shape[0]
         loss = loss / len(self.e_layers)
-        # print(loss)
         return loss
 
 
@@ -327,16 +277,6 @@ class NDPrompt(nn.Module):
         #
         # code for this function is modified from:
         # https://github.com/legendongary/pytorch-gram-schmidt/blob/master/gram_schmidt.py
-        # for e in self.e_layers:
-        #     K = getattr(self, f'e_k_{e}')
-        #     A = getattr(self, f'e_a_{e}')
-        #     P = getattr(self, f'e_p_{e}')
-        #     k = self.gram_schmidt(K)
-        #     a = self.gram_schmidt(A)
-        #     p = self.gram_schmidt(P)
-        #     setattr(self, f'e_p_{e}', p)
-        #     setattr(self, f'e_k_{e}', k)
-        #     setattr(self, f'e_a_{e}', a)
 
     # code for this function is modified from:
     # https://github.com/legendongary/pytorch-gram-schmidt/blob/master/gram_schmidt.py
@@ -381,7 +321,6 @@ class NDPrompt(nn.Module):
                         proj = projection(uj, vk)
                         if proj is None:
                             redo = True
-                            print('restarting!!!')
                         else:
                             uk = uk + proj
                 if not redo: uu[:, k] = vk - uk
@@ -417,15 +356,11 @@ class NDPrompt(nn.Module):
             n_K = nn.functional.normalize(K, dim=1)
             q = nn.functional.normalize(a_querry, dim=2)
             aq_k = torch.einsum('bkd,kd->bk', q, n_K)
-            # print(aq_k)
             if self.task_count > 0 and train:
 
                 if l == self.e_layers[0]:
                     aq = aq_k
-                    # aq = torch.sigmoid(aq)
                     for i in range(self.aug):
-                        # aq_k + 0.1 *
-                        # aq_aug = (torch.randn((aq_k.shape[0], aq_k.shape[1]))).to(aq_k.device)
                         noise = torch.randn((aq_k.shape[0], aq_k.shape[1]))
                         aq_aug = aq_k + self.args["lamda"] * noise.to(aq_k.device)
                         aq = torch.cat((aq, aq_aug.to(aq_k.device)), dim=0)
@@ -433,13 +368,10 @@ class NDPrompt(nn.Module):
             if self.task_count > 0 and proto:
                 if l == self.e_layers[0]:
                     aq = torch.randn((aq_k.shape[0] * self.proto, aq_k.shape[1]))
-                    # aq = torch.sigmoid(aq)
                     aq_k = torch.cat((aq_k, aq.to(aq_k.device)), dim=0)
                 else:
                     aq = torch.randn((int(aq_k.shape[0] / (self.proto + 1)) * self.proto, aq_k.shape[1]))
-                    # aq = torch.sigmoid(aq)
                     aq_k = torch.cat((aq_k[:-aq.shape[0], :], aq.to(aq_k.device)), dim=0)
-            # aq_k=torch.sigmoid(aq_k)
             aq_k = F.relu(-aq_k)
             # (b x 1 x k x 1) * [1 x plen x k x d] = (b x plen x d) -> prompt = plen x k x d
             P_ = torch.einsum('bk,kld->bld', aq_k, p)
